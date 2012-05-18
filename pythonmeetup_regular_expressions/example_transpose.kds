@@ -1,0 +1,7 @@
+S'\\w+, \\w+, \\w+.'
+p1
+.S'Groups allow to "store" matched elements for later use in replacement operations.\n\nTranspose example: first, second, third.\n'
+p2
+.I0
+.S''
+.

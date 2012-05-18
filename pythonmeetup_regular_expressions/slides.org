@@ -1,0 +1,195 @@
+#+TITLE: Stand back, I know regular expressions!
+#+AUTHOR:    Eloi Crespillo (eloi@zenpl.com)
+#+EMAIL:     eloi@zenpl.com
+#+DATE:      2012-05-17
+#+options: num:nil
+
+
+* First things first
+
+*How many of you are NOT using regular expressions?*
+
+* Are you kidding me?
+
+[[./slides_img/are_you_kidding_me.png]]
+
+*Use them!* Regular expressions are incredibly useful!
+
+* What are regular expressions?
+
+/A regular expression provides a concise and flexible means to "match" (specify and recognize) strings of text, such as particular characters, words, or patterns of characters./
+
+-Wikipedia
+
+In other words:
+- It's a "language" (an easy one)
+- Allows us to look for character patterns inside text and retrieve/modify/replace them.
+
+* Some examples
+
+#+ATTR_HTML: border="2" rules="all" frame="border" style="font-size:30px;"
+| Regexp      | Matches                                |
+|-------------+----------------------------------------|
+| python      | python                                 |
+| pythonists? | pythonist, pythonists                  |
+| python\w*   | python, pythonist, pythonical,...      |
+| python\w+   | pythonist, pythonical,...              |
+| \d+         | any number: 1, 12, 345, 12338992323... |
+
+A wilder one:
+#+ATTR_HTML: border="2" rules="all" frame="border" style="font-size:30px;"
+| Regexp                                    | Matches              |
+|-------------------------------------------+----------------------|
+| \b[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b | Most e-mail adresses |
+  
+
+* Don't Panic!
+
+It's easier that it seems.
+
+[[./slides_img/mother_of_god.jpg]]
+
+
+Let's review the regexp language:
+
+* Literals
+
+Any character that is not a reserved one matches itself.
+
+Examples: a, b, c, d, j, H, 3, ... 
+
+Literals are *case-sensitive*.
+
+* Metacharacters (the special ones)
+
+*. ^ $ * + ? { } [ ] \ | ( )*
+
+
+#+ATTR_HTML: border="2" rules="all" frame="border" style="font-size:30px;"
+| .   | Any single char  |   | ^ $   | Begin/end line    |
+| *   | 0 or more chars  |   | +     | 1 or more chars   |
+| ?   | 0 or 1 chars     |   | { }   | range  (ex: {2,4} |
+| [ ] | subset (ex:[0-9] |   | ()    | Group definition  |
+| \   | Escape           |   | \vert | "OR"              |
+
+Some characters, like ? or ^, have other meanings depending on where are located inside the regexp.
+* Shorthands
+#+ATTR_HTML: border="2" rules="all" frame="border" style="font-size:30px;"
+| *\d* | Matches any decimal digit; equivalent to [0-9].                                        |
+| *\D* | Matches any non-digit character; equivalent to [^ 0-9].                                |
+| *\s* | Matches any whitespace character; this is equivalent to the class [ \t\n\r\f\v].       |
+| *\S* | Matches any non-whitespace character; this is equivalent to the class [^ \t\n\r\f\v].  |
+| *\w* | Matches any alphanumeric character; this is equivalent to the class [a-zA-Z0-9_ ].     |
+| *\W* | Matches any non-alphanumeric character; this is equivalent to the class [^ a-zA-Z0-9_ ]. |
+
+
+* Live example!
+
+There are a lot of regexp editors out there that could ease the task of creating/testing regular expressions.
+
+* Groups
+
+Using parentheses *()* allows to use the repetition characters (*, +, ...) on a regexp subset, or "mark" matched substrings for later retrieval (using \1, \2, ...)
+
+Example:
+
++ string: "first number: 123, second number: 34556"
++ regexp: "first number: (\d+), second number: (\d+)"
++ matches:
+  - \1 => 123
+  - \2 => 34556
+
+
+* Well, what about python? (RE module)
+
+#+begin_src python
+
+import re
+
+# Determine if the RE matches at the beginning of the string.
+re.match(pattern, string)	
+# Scan through a string, looking for any location where this RE matches.
+re.search(pattern, string)	
+# Find all substrings where the RE matches, and returns them as a list.
+re.findall(pattern, string)
+# Find all substrings where the RE matches, and returns them as an iterator.
+re.finditer(pattern, string)
+
+#Split the string into a list, splitting it wherever the RE matches
+re.split(pattern, string) 
+#Find all substrings where the RE matches, and replace them with a different string
+re.sub(pattern, replacement, string)	 
+#Does the same thing as sub(), but returns the new string and the number of replacements
+re.subn(pattern, replacement, string)	 
+#+end_src
+
+http://docs.python.org/library/re.html
+
+* A simple example
+
+#+BEGIN_SRC python
+import re
+
+regexp = r"(?P<groupname>python\w*)"
+matchstr = """Welcome fellow pythonists to this PythonMeetup!
+Some pythonic ways of doing regex matching in python.
+"""
+# method 1: using search function (w/ external flags)
+match_obj = re.search(regexp, matchstr,  re.IGNORECASE)
+
+# method 2: using a compile object (and some flags
+compile_obj = re.compile(regexp,  re.IGNORECASE | re.DOTALL)
+match_obj = compile_obj.search(matchstr)
+
+# Retrieve group(s) from match_obj
+all_groups = match_obj.groups()
+
+# Retrieve group(s) by index
+group_1 = match_obj.group(1)
+
+# Retrieve group(s) by name
+group_name = match_obj.group('groupname')
+
+# Return list with all matches
+all_matches = compile_obj.findall(matchstr)
+#+END_SRC
+
+
+* Selling points
+
+*Everywhere, they are everywhere!*
+
+- Most programming/scripting languages support Regexes
+- Editors: Vim, Emacs, OpenOffice (Libreoffice)
+
+*Very useful for scientists*
+
+Allows "easy" automation to extract textual data from huge documents (p.e. PDB data) or convert it to another format.
+
+* Some caveats
+
+Regex syntax has variations from language to language
+
+("vi" style, "perl" style, "emacs" style) ...
+
+#+ATTR_HTML: border="2" rules="all" frame="border" style="font-size:30px;"
+| Match...     | vim  | emacs         | python |
+| alphanumeric | \w   | [ [:word:] ]  | \w     |
+| digit        | \d   | [ [:digit:] ] | \d     |
+| Non greedy * | \{-} | *?            | *?     |
+
+* Some caveats 
+
+- Not all features available in all languages
+- Most languages have specific features only available in that language
+- Not everything is "regexp-able"
+
+* That's all
+
+
+*Questions?*
+
+* Thanks! (http://www.xkcd.com/208/)
+
+#+ATTR_HTML: style="margin-left: 100px;"
+[[./slides_img/regular_expressions.png]]
