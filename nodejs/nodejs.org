@@ -1,0 +1,171 @@
+#+TITLE:     Nodejs
+#+AUTHOR:    Eloi Crespillo (eloi@zenpl.com)
+#+EMAIL:     eloi@zenpl.com
+#+DATE:      2012-02-24
+
+* ¿Qué es Nodejs?
+  
+http://nodejs.org/logo.png
+
+"Node.js is a platform built on Chrome's JavaScript runtime for easily building fast, scalable network applications."
+
+"Node.js uses an event-driven, non-blocking I/O model that makes it lightweight and efficient, perfect for data-intensive real-time applications that run across distributed devices."
+
+http://nodejs.org/
+
+* ¿Qué es Nodejs?
+
+http://nodejs.org/logo.png
+
+*Analizemos:*
+
+"Node.js is a platform built on Chrome's _*JavaScript*_ runtime for easily building _*fast*_, _*scalable*_ _*network applications*_."
+
+"Node.js uses an _*event-driven*_, _*non-blocking I/O model*_ that makes it lightweight and efficient, perfect for data-intensive real-time applications that run across distributed devices."
+
+*Inspirado en Event Machine (ruby) y Twisted (Python)*
+
+* Ejemplos (I)
+
+~webserver_hello.js~
+#+begin_src js
+var http = require('http');
+http.createServer(function (req, res) {
+  res.writeHead(200, {'Content-Type': 'text/plain'});
+  res.end('Hello World\n');
+}).listen(1337, "127.0.0.1");
+console.log('Server running at http://127.0.0.1:1337/');
+#+end_src
+
+
+~telnet_echo.js~
+#+begin_src js
+var net = require('net');
+var server = net.createServer(function (socket) {
+  socket.write("Echo server\r\n");
+  socket.pipe(socket);
+});
+server.listen(2525, "127.0.0.1");
+#+end_src
+
+* Ejemplos (II)
+
+~webserver.js~
+#+begin_src js
+var http = require('http');
+var server = http.createServer(function (req, res) {
+	  res.writeHead(200, {'Content-Type': 'text/plain'});
+		      res.end('Hello World\n');
+})
+
+function start() {
+	server.listen(1337, "127.0.0.1");
+}
+exports.start = start;
+#+end_src
+
+~start_webserver.js~
+#+begin_src js
+var webserver = require('./webserver');
+webserver.start()
+#+end_src
+
+* Usos
+
+_Aplicaciones de red ligeras y escalables_
+- Interfaces REST 
+- Interconexión MongoDB / CouchDB
+
+[[http://logio.org/][http://logio.org/logo.gif]]
+
+_Programas CLI_
+- Menos usado pero empieza a haber cosas
+  
+* Puntos fuertes (I)
+
+_Rápido_
+- Especialmente para I/O
+- "Evented", no multi-hilo
+
+_Curva de aprendizaje muy rápida_
+- Javascript
+- Con comunidad y bien documentado [[http://nodejs.org/community/][(Ver)]]
+
+_Utilizado por los pesos pesados_ http://nodejs.org
+- Microsoft / Ebay / Linkedin / Yahoo ...
+
+* Puntos fuertes (II).
+
+- Instalación fácil
+- Gestor de paquetes (NPM) [[http://npmjs.org/][(npmjs.org)]]
+#+begin_src shell
+sudo apt-get install nodejs npm
+npm install MODULO
+#+end_src
+
+- Multitud de módulos
+  - [[http://search.npmjs.org/#/_browse/all][(7472 en NPM registry)]]
+  - Github, blogs, etc.
+
+* Peculiaridades (I)
+
+_El loop de eventos se activa automáticamente_
+  - (No como en EM o Twisted)
+
+_No se requiere servidor_
+  - Nodejs se suele lanzar directamente node desde un script
+  - Se puede integrar como FCGI o WSGI, pero no sé si lo hace nadie
+
+* Peculiaridades (II)
+
+*No es multihilo (multiprocesador) por defecto*
+
+~highcpu.js~
+#+begin_src js
+for(var i=0; i<10000000000; i++) {
+    var test = i*i;
+    console.log(i);
+}
+#+end_src
+
+... Pero se pueden hacer multihilo
+- Cluster
+- child.fork()
+
+* Peculiaridades (III)
+
+~highcpu_cluster.js~
+#+begin_src js
+var cluster = require('cluster');
+var numCPUs = 2
+
+if (cluster.isMaster) {
+  // Fork workers.
+  for (var i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('death', function(worker) {
+    console.log('worker ' + worker.pid + ' died');
+  });
+} else {
+    for(var i=0; i<10000000000; i++) {
+	var test = i*i;
+	console.log(i);
+    }
+}% 
+#+end_src
+
+
+* Para empezar
+
+- http://nodejs.org/community
+- http://blog.nodejitsu.com/
+- Google It!
+ 
+* Hasta aquí hemos llegado
+
+    *¡ Gracias !*
+
+Nota: Presentación creada... con Emacs!
+
